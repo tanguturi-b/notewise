@@ -1,13 +1,18 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from config import Config
 from models import db, User, Note
-
+import os
+from groq import Groq
 app = Flask(__name__)
 app.config.from_object(Config)
 
 db.init_app(app)
+groq_client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -113,6 +118,28 @@ def delete_note(note_id):
         return "Unauthorized", 403
     db.session.delete(note)
     db.session.commit()
+    return redirect(url_for('home'))
+@app.route('/note/<int:note_id>/summarize', methods=['POST'])
+@login_required
+def summarize_note(note_id):
+    note = Note.query.get_or_404(note_id)
+    if note.user_id != current_user.id:
+        return "Unauthorized", 403
+
+    try:
+        response = groq_client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {"role": "system", "content": "Summarize the given note in 1-2 concise sentences. Return only the summary, nothing else."},
+                {"role": "user", "content": note.content}
+            ],
+            max_tokens=100
+        )
+        summary = response.choices[0].message.content
+        flash(f"Summary: {summary}")
+    except Exception as e:
+        flash(f"Summarization failed: {str(e)}")
+
     return redirect(url_for('home'))
 
 if __name__ == "__main__":
