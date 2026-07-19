@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Login - Smart Notes AI</title>
+    <title>Login - NoteWise</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
 <div class="auth-container">
     <div class="auth-box">
         <h1>Welcome back</h1>
-        {% with messages = get_flashed_messages() %}
+        {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-                {% for msg in messages %}
-                    <div class="flash">{{ msg }}</div>
+                {% for category, msg in messages %}
+                    <div class="flash flash-{{ category }}">{{ msg }}</div>
                 {% endfor %}
             {% endif %}
         {% endwith %}

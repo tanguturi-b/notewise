@@ -14,10 +14,10 @@
 </div>
 
 <div class="container">
-    {% with messages = get_flashed_messages() %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-            {% for msg in messages %}
-                <div class="flash" style="margin-bottom: 20px;">{{ msg }}</div>
+            {% for category, msg in messages %}
+                <div class="flash flash-{{ category }}" style="margin-bottom: 20px;">{{ msg }}</div>
             {% endfor %}
         {% endif %}
     {% endwith %}

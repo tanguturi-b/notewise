@@ -8,6 +8,7 @@ from config import Config
 from models import db, User, Note
 import os
 from groq import Groq
+
 app = Flask(__name__)
 app.config.from_object(Config)
 
@@ -21,6 +22,7 @@ login_manager.login_view = 'login'
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(User, int(user_id))
+
 # ---------- AUTH ----------
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -31,7 +33,7 @@ def signup():
         password = request.form['password']
 
         if User.query.filter_by(email=email).first():
-            flash('Email already registered.')
+            flash('Email already registered.', 'error')
             return redirect(url_for('signup'))
 
         user = User(
@@ -56,7 +58,7 @@ def login():
         if user and check_password_hash(user.password_hash, password):
             login_user(user)
             return redirect(url_for('home'))
-        flash('Invalid email or password.')
+        flash('Invalid email or password.', 'error')
         return redirect(url_for('login'))
 
     return render_template('login.html')
@@ -119,6 +121,7 @@ def delete_note(note_id):
     db.session.delete(note)
     db.session.commit()
     return redirect(url_for('home'))
+
 @app.route('/note/<int:note_id>/summarize', methods=['POST'])
 @login_required
 def summarize_note(note_id):
@@ -136,9 +139,9 @@ def summarize_note(note_id):
             max_tokens=100
         )
         summary = response.choices[0].message.content
-        flash(f"Summary: {summary}")
+        flash(f"Summary: {summary}", 'success')
     except Exception as e:
-        flash(f"Summarization failed: {str(e)}")
+        flash(f"Summarization failed: {str(e)}", 'error')
 
     return redirect(url_for('home'))
 
