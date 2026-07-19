@@ -67,8 +67,15 @@ def logout():
 @app.route('/')
 @login_required
 def home():
-    notes = Note.query.filter_by(user_id=current_user.id).order_by(Note.updated_at.desc()).all()
-    return render_template('index.html', notes=notes)
+    query = request.args.get('q', '').strip()
+    if query:
+        notes = Note.query.filter(
+            Note.user_id == current_user.id,
+            (Note.title.contains(query)) | (Note.content.contains(query))
+        ).order_by(Note.updated_at.desc()).all()
+    else:
+        notes = Note.query.filter_by(user_id=current_user.id).order_by(Note.updated_at.desc()).all()
+    return render_template('index.html', notes=notes, search_query=query)
 
 @app.route('/note/new', methods=['GET', 'POST'])
 @login_required
