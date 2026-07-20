@@ -1,8 +1,15 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
-from datetime import datetime
+from datetime import datetime, timedelta
 
 db = SQLAlchemy()
+
+IST_OFFSET = timedelta(hours=5, minutes=30)
+
+def to_ist(utc_dt):
+    if utc_dt is None:
+        return None
+    return utc_dt + IST_OFFSET
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)

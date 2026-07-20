@@ -5,7 +5,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from config import Config
-from models import db, User, Note
+from models import db, User, Note, to_ist
 import os
 from groq import Groq
 
@@ -18,6 +18,11 @@ groq_client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
+
+@app.template_filter('ist')
+def ist_filter(dt):
+    converted = to_ist(dt)
+    return converted.strftime('%b %d, %Y · %I:%M %p') if converted else ''
 
 @login_manager.user_loader
 def load_user(user_id):
