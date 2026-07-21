@@ -150,7 +150,8 @@ def summarize_note(note_id):
 
     return redirect(url_for('home'))
 
+with app.app_context():
+    db.create_all()
+
 if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
     app.run(debug=os.environ.get("FLASK_DEBUG", "False") == "True")
