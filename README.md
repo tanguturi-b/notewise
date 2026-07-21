@@ -4,6 +4,9 @@ A full-stack note-taking web application with user authentication, AI-powered su
 
 ![NoteWise Dashboard](static/images/screenshot-home.png)
 
+
+**🔗 Live Demo:** [https://notewise-8lox.onrender.com](https://notewise-8lox.onrender.com)
+
 ## Features
 
 - **User Authentication** — Secure signup/login with password hashing (Werkzeug)
@@ -83,12 +86,12 @@ python app.py
 - Writing scoped database queries to ensure users can only access their own data
 - Iterative UI design — moving from a generic template look to a deliberate, custom theme
 
-## Roadmap
 
+
+## Roadmap
 - [ ] Dark mode
 - [ ] PDF export
-- [ ] Live deployment
-- [ ] Distinct success/error flash message styling
+- [ ] Persistent database (currently SQLite resets on redeploy — free tier limitation)
 
 ## License
 
