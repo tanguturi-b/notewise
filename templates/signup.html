@@ -2,6 +2,11 @@
 <html>
 <head>
     <title>Sign Up - NoteWise</title>
+    <script>
+    (function() {
+        document.documentElement.setAttribute('data-theme', localStorage.getItem('theme') || 'light');
+    })();
+    </script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>

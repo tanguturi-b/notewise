@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>NoteWise — Notes, Simplified</title>
+    <script>
+    (function() {
+        document.documentElement.setAttribute('data-theme', localStorage.getItem('theme') || 'light');
+    })();
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="landing-hero">
+    <div class="book-scene">
+        <div class="book">
+            <div class="book-base"></div>
+            <div class="book-page page-2"></div>
+            <div class="book-page page-1"></div>
+            <div class="book-cover">
+                <span class="book-mark">◆</span>
+                <h2>NoteWise</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="landing-badge">NoteWise</div>
+    <h1>Notes that think<br>with you.</h1>
+    <p>Write, search, and summarize your notes with AI — clean, fast, and yours.</p>
+    <div class="landing-actions">
+        <a href="{{ url_for('signup') }}" class="btn btn-primary">Get Started</a>
+        <a href="{{ url_for('login') }}" class="btn">Log In</a>
+    </div>
+</div>
+</body>
+</html>

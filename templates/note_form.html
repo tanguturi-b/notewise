@@ -2,6 +2,11 @@
 <html>
 <head>
     <title>{{ 'Edit' if note else 'New' }} Note</title>
+    <script>
+    (function() {
+        document.documentElement.setAttribute('data-theme', localStorage.getItem('theme') || 'light');
+    })();
+    </script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
@@ -9,10 +14,10 @@
     <h1>{{ 'Edit Note' if note else 'New Note' }}</h1>
     <form method="POST">
         <input type="text" name="title" placeholder="Title" value="{{ note.title if note else '' }}" required>
-        <textarea name="content" placeholder="Write your note...">{{ note.content if note else '' }}</textarea>
+        <textarea name="content" placeholder="Write your note... (Markdown supported: **bold**, *italic*, - lists)">{{ note.content if note else '' }}</textarea>
         <div class="form-actions">
             <button type="submit" class="btn btn-primary">Save</button>
-            <a href="{{ url_for('home') }}">Cancel</a>
+            <a href="{{ url_for('dashboard') }}">Cancel</a>
         </div>
     </form>
 </div>

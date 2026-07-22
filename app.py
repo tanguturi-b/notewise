@@ -4,6 +4,8 @@ load_dotenv()
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
+from markupsafe import Markup
+import markdown as md
 from config import Config
 from models import db, User, Note, to_ist
 import os
@@ -24,9 +26,23 @@ def ist_filter(dt):
     converted = to_ist(dt)
     return converted.strftime('%b %d, %Y · %I:%M %p') if converted else ''
 
+@app.template_filter('markdown')
+def markdown_filter(text):
+    if not text:
+        return ''
+    return Markup(md.markdown(text, extensions=['extra', 'nl2br']))
+
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(User, int(user_id))
+
+# ---------- LANDING ----------
+
+@app.route('/')
+def landing():
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    return render_template('landing.html')
 
 # ---------- AUTH ----------
 
@@ -49,7 +65,7 @@ def signup():
         db.session.add(user)
         db.session.commit()
         login_user(user)
-        return redirect(url_for('home'))
+        return redirect(url_for('dashboard'))
 
     return render_template('signup.html')
 
@@ -62,7 +78,7 @@ def login():
 
         if user and check_password_hash(user.password_hash, password):
             login_user(user)
-            return redirect(url_for('home'))
+            return redirect(url_for('dashboard'))
         flash('Invalid email or password.', 'error')
         return redirect(url_for('login'))
 
@@ -72,21 +88,40 @@ def login():
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('login'))
+    return redirect(url_for('landing'))
+
+# ---------- PROFILE ----------
+
+@app.route('/profile', methods=['GET', 'POST'])
+@login_required
+def profile():
+    if request.method == 'POST':
+        new_username = request.form['username'].strip()
+        new_email = request.form['email'].strip()
+
+        existing = User.query.filter_by(email=new_email).first()
+        if existing and existing.id != current_user.id:
+            flash('That email is already in use by another account.', 'error')
+            return redirect(url_for('profile'))
+
+        current_user.username = new_username
+        current_user.email = new_email
+        db.session.commit()
+        flash('Profile updated successfully.', 'success')
+        return redirect(url_for('profile'))
+
+    return render_template('profile.html')
 
 # ---------- NOTES CRUD ----------
 
-@app.route('/')
+@app.route('/dashboard')
 @login_required
-def home():
+def dashboard():
     query = request.args.get('q', '').strip()
+    base = Note.query.filter_by(user_id=current_user.id)
     if query:
-        notes = Note.query.filter(
-            Note.user_id == current_user.id,
-            (Note.title.contains(query)) | (Note.content.contains(query))
-        ).order_by(Note.updated_at.desc()).all()
-    else:
-        notes = Note.query.filter_by(user_id=current_user.id).order_by(Note.updated_at.desc()).all()
+        base = base.filter((Note.title.contains(query)) | (Note.content.contains(query)))
+    notes = base.order_by(Note.is_favorite.desc(), Note.updated_at.desc()).all()
     return render_template('index.html', notes=notes, search_query=query)
 
 @app.route('/note/new', methods=['GET', 'POST'])
@@ -100,7 +135,7 @@ def new_note():
         )
         db.session.add(note)
         db.session.commit()
-        return redirect(url_for('home'))
+        return redirect(url_for('dashboard'))
     return render_template('note_form.html', note=None)
 
 @app.route('/note/<int:note_id>/edit', methods=['GET', 'POST'])
@@ -114,7 +149,7 @@ def edit_note(note_id):
         note.title = request.form['title']
         note.content = request.form['content']
         db.session.commit()
-        return redirect(url_for('home'))
+        return redirect(url_for('dashboard'))
     return render_template('note_form.html', note=note)
 
 @app.route('/note/<int:note_id>/delete', methods=['POST'])
@@ -125,7 +160,17 @@ def delete_note(note_id):
         return "Unauthorized", 403
     db.session.delete(note)
     db.session.commit()
-    return redirect(url_for('home'))
+    return redirect(url_for('dashboard'))
+
+@app.route('/note/<int:note_id>/favorite', methods=['POST'])
+@login_required
+def toggle_favorite(note_id):
+    note = Note.query.get_or_404(note_id)
+    if note.user_id != current_user.id:
+        return "Unauthorized", 403
+    note.is_favorite = not note.is_favorite
+    db.session.commit()
+    return redirect(url_for('dashboard'))
 
 @app.route('/note/<int:note_id>/summarize', methods=['POST'])
 @login_required
@@ -148,7 +193,7 @@ def summarize_note(note_id):
     except Exception as e:
         flash(f"Summarization failed: {str(e)}", 'error')
 
-    return redirect(url_for('home'))
+    return redirect(url_for('dashboard'))
 
 with app.app_context():
     db.create_all()
