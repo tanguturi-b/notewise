@@ -14,6 +14,8 @@ A full-stack note-taking web application with user authentication, AI-powered su
 - **Search** — Real-time filtering of notes by title or content
 - **AI Summarization** — One-click note summarization powered by Groq's LLM API (Llama 3.3 70B)
 - **Clean, custom UI** — Notebook/stationery-themed design, no UI framework
+- **User Profiles** — Update your username and email anytime
+- **Landing Page** — Animated introduction before signup
 
 ## Tech Stack
 
@@ -89,9 +91,9 @@ python app.py
 
 
 ## Roadmap
-- [ ] Dark mode
-- [ ] PDF export
-- [ ] Persistent database (currently SQLite resets on redeploy — free tier limitation)
+- [ ] Always gets new versions
+
+
 
 ## License
 
