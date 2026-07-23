@@ -6,6 +6,10 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 from werkzeug.security import generate_password_hash, check_password_hash
 from markupsafe import Markup
 import markdown as md
+import bleach
+
+ALLOWED_TAGS = ['p', 'br', 'strong', 'em', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'blockquote', 'code', 'pre', 'a']
+ALLOWED_ATTRS = {'a': ['href']}
 from config import Config
 from models import db, User, Note, to_ist
 import os
@@ -30,7 +34,9 @@ def ist_filter(dt):
 def markdown_filter(text):
     if not text:
         return ''
-    return Markup(md.markdown(text, extensions=['extra', 'nl2br']))
+    raw_html = md.markdown(text, extensions=['extra', 'nl2br'])
+    clean_html = bleach.clean(raw_html, tags=ALLOWED_TAGS, attributes=ALLOWED_ATTRS)
+    return Markup(clean_html)
 
 @login_manager.user_loader
 def load_user(user_id):
