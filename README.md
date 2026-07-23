@@ -6,6 +6,7 @@ A full-stack note-taking web application with user authentication, AI-powered su
 
 
 **🔗 Live Demo:** [https://notewise-8lox.onrender.com](https://notewise-8lox.onrender.com)
+Note: This app is hosted on Render's free tier. The first visit may take 30–60 seconds while the server wakes up.
 
 ## Features
 
