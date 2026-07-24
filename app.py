@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 load_dotenv()
 
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from markupsafe import Markup
@@ -10,11 +10,11 @@ import bleach
 
 ALLOWED_TAGS = ['p', 'br', 'strong', 'em', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'blockquote', 'code', 'pre', 'a']
 ALLOWED_ATTRS = {'a': ['href']}
+
 from config import Config
 from models import db, User, Note, to_ist
 import os
 from groq import Groq
-from flask import session
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -209,7 +209,35 @@ def summarize_note(note_id):
     except Exception as e:
         flash(f"Summarization failed: {str(e)}", 'error')
 
-    return redirect(url_for('dashboard'))
+    return redirect(url_for('edit_note', note_id=note_id))
+
+@app.route('/note/<int:note_id>/ask', methods=['POST'])
+@login_required
+def ask_about_note(note_id):
+    note = Note.query.get_or_404(note_id)
+    if note.user_id != current_user.id:
+        return "Unauthorized", 403
+
+    question = request.form.get('question', '').strip()
+    if question:
+        try:
+            response = groq_client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[
+                    {"role": "system", "content": "Answer the user's question based only on the note content provided. Be concise."},
+                    {"role": "user", "content": f"Note content:\n{note.content}\n\nQuestion: {question}"}
+                ],
+                max_tokens=200
+            )
+            answer = response.choices[0].message.content
+            flash(f"Q: {question}\nA: {answer}", 'success')
+        except Exception as e:
+            flash(f"Failed to get answer: {str(e)}", 'error')
+
+    return redirect(url_for('edit_note', note_id=note_id))
+
+# ---------- AI CHAT ----------
+
 @app.route('/chat', methods=['GET', 'POST'])
 @login_required
 def chat():
@@ -247,7 +275,6 @@ def chat():
 def clear_chat():
     session['chat_history'] = []
     return redirect(url_for('chat'))
-
 
 with app.app_context():
     db.create_all()
