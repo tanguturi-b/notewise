@@ -14,6 +14,7 @@ from config import Config
 from models import db, User, Note, to_ist
 import os
 from groq import Groq
+from flask import session
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -37,6 +38,15 @@ def markdown_filter(text):
     raw_html = md.markdown(text, extensions=['extra', 'nl2br'])
     clean_html = bleach.clean(raw_html, tags=ALLOWED_TAGS, attributes=ALLOWED_ATTRS)
     return Markup(clean_html)
+
+@app.template_filter('preview')
+def preview_filter(text, length=150):
+    if not text:
+        return ''
+    plain = text.strip()
+    if len(plain) > length:
+        plain = plain[:length].rsplit(' ', 1)[0] + '…'
+    return plain
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -200,6 +210,44 @@ def summarize_note(note_id):
         flash(f"Summarization failed: {str(e)}", 'error')
 
     return redirect(url_for('dashboard'))
+@app.route('/chat', methods=['GET', 'POST'])
+@login_required
+def chat():
+    if 'chat_history' not in session:
+        session['chat_history'] = []
+
+    if request.method == 'POST':
+        user_message = request.form['message'].strip()
+        if user_message:
+            history = session['chat_history']
+            history.append({'role': 'user', 'content': user_message})
+
+            try:
+                messages = [{"role": "system", "content": "You are a helpful assistant inside a notes app called NoteWise. Be concise and friendly."}]
+                messages += history[-10:]
+                response = groq_client.chat.completions.create(
+                    model="llama-3.3-70b-versatile",
+                    messages=messages,
+                    max_tokens=300
+                )
+                ai_reply = response.choices[0].message.content
+                history.append({'role': 'assistant', 'content': ai_reply})
+            except Exception as e:
+                history.append({'role': 'assistant', 'content': f"Error: {str(e)}"})
+
+            session['chat_history'] = history
+            session.modified = True
+
+        return redirect(url_for('chat'))
+
+    return render_template('chat.html', history=session.get('chat_history', []))
+
+@app.route('/chat/clear', methods=['POST'])
+@login_required
+def clear_chat():
+    session['chat_history'] = []
+    return redirect(url_for('chat'))
+
 
 with app.app_context():
     db.create_all()
