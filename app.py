@@ -18,6 +18,13 @@ from groq import Groq
 
 app = Flask(__name__)
 app.config.from_object(Config)
+@app.after_request
+def add_no_cache_headers(response):
+    if current_user.is_authenticated or request.path in ['/login', '/signup', '/profile', '/dashboard']:
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '-1'
+    return response
 
 db.init_app(app)
 groq_client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
