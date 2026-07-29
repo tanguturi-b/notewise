@@ -141,11 +141,14 @@ def profile():
 @login_required
 def dashboard():
     query = request.args.get('q', '').strip()
+    show_favorites = request.args.get('filter') == 'favorites'
     base = Note.query.filter_by(user_id=current_user.id)
     if query:
         base = base.filter((Note.title.contains(query)) | (Note.content.contains(query)))
+    if show_favorites:
+        base = base.filter_by(is_favorite=True)
     notes = base.order_by(Note.is_favorite.desc(), Note.updated_at.desc()).all()
-    return render_template('index.html', notes=notes, search_query=query)
+    return render_template('index.html', notes=notes, search_query=query, show_favorites=show_favorites)
 
 @app.route('/note/new', methods=['GET', 'POST'])
 @login_required
