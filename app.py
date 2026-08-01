@@ -83,6 +83,10 @@ def signup():
             flash('Email already registered.', 'error')
             return redirect(url_for('signup'))
 
+        if User.query.filter_by(username=username).first():
+            flash('That username is already taken.', 'error')
+            return redirect(url_for('signup'))
+
         user = User(
             username=username,
             email=email,
@@ -173,6 +177,7 @@ def dashboard():
     show_favorites = request.args.get('filter') == 'favorites'
     folder_id = request.args.get('folder_id', type=int)
     date_range = request.args.get('range', '').strip()
+    specific_date = request.args.get('date', '').strip()
 
     base = Note.query.filter_by(user_id=current_user.id, is_deleted=False, is_archived=False)
 
@@ -185,7 +190,13 @@ def dashboard():
 
     notes = base.order_by(Note.is_favorite.desc(), Note.updated_at.desc()).all()
 
-    if date_range:
+    if specific_date:
+        try:
+            target = datetime.strptime(specific_date, '%Y-%m-%d').date()
+            notes = [n for n in notes if to_ist(n.updated_at) and to_ist(n.updated_at).date() == target]
+        except ValueError:
+            specific_date = ''
+    elif date_range:
         now = datetime.utcnow()
         cutoff = None
         if date_range == 'today':
@@ -203,7 +214,8 @@ def dashboard():
     return render_template(
         'index.html', notes=notes, search_query=query,
         show_favorites=show_favorites, folders=folders,
-        current_folder=current_folder, date_range=date_range
+        current_folder=current_folder, date_range=date_range,
+        specific_date=specific_date
     )
 
 @app.route('/note/new', methods=['GET', 'POST'])
