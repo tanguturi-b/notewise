@@ -1,35 +1,393 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>NoteWise — Notes, Simplified</title>
+    <title>NoteWise — Notes that think with you</title>
+    <meta name="description" content="Write, search, and summarize your notes with AI. NoteWise is the smart, clean, and fast note-taking app powered by AI.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>
     (function() {
         document.documentElement.setAttribute('data-theme', localStorage.getItem('theme') || 'light');
     })();
+    function toggleTheme() {
+        const html = document.documentElement;
+        const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+    }
     </script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body>
-<div class="landing-hero">
-    <div class="book-scene">
-        <div class="book">
-            <div class="book-base"></div>
-            <div class="book-page page-2"></div>
-            <div class="book-page page-1"></div>
-            <div class="book-cover">
-                <span class="book-mark">◆</span>
-                <h2>NoteWise</h2>
+<body class="landing-body">
+
+<!-- ======== NAVBAR ======== -->
+<nav class="landing-nav" id="landing-nav">
+    <div class="landing-nav-inner">
+        <a href="#" class="landing-nav-brand">
+            <span class="landing-nav-diamond">◆</span> NoteWise
+        </a>
+        <div class="landing-nav-links">
+            <a href="#features">Features</a>
+            <a href="#how-it-works">How It Works</a>
+            <a href="#ai-power">AI</a>
+            <button onclick="toggleTheme()" class="landing-theme-toggle" title="Toggle theme">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+            </button>
+            <a href="{{ url_for('login') }}" class="landing-nav-login">Log In</a>
+            <a href="{{ url_for('signup') }}" class="btn btn-primary landing-nav-cta">Get Started Free</a>
+        </div>
+        <button class="landing-mobile-menu" onclick="document.querySelector('.landing-nav-links').classList.toggle('open')" aria-label="Toggle menu">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+    </div>
+</nav>
+
+<!-- ======== HERO ======== -->
+<section class="hero" id="hero">
+    <div class="hero-glow hero-glow-1"></div>
+    <div class="hero-glow hero-glow-2"></div>
+
+    <div class="hero-content">
+        <div class="hero-badge">
+            <span class="hero-badge-dot"></span>
+            AI-Powered Note Taking
+        </div>
+
+        <h1 class="hero-title">
+            Notes that <span class="hero-gradient-text">think</span><br>with you.
+        </h1>
+
+        <p class="hero-subtitle">
+            Write, organize, and understand your notes with the power of AI.
+            Clean design. Lightning fast. Completely yours.
+        </p>
+
+        <div class="hero-actions">
+            <a href="{{ url_for('signup') }}" class="hero-btn-primary" id="hero-cta">
+                Start Writing Free
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </a>
+            <a href="#features" class="hero-btn-secondary" id="hero-learn-more">
+                See Features
+            </a>
+        </div>
+
+        <div class="hero-stats">
+            <div class="hero-stat">
+                <span class="hero-stat-number">∞</span>
+                <span class="hero-stat-label">Notes</span>
+            </div>
+            <div class="hero-stat-divider"></div>
+            <div class="hero-stat">
+                <span class="hero-stat-number">AI</span>
+                <span class="hero-stat-label">Powered</span>
+            </div>
+            <div class="hero-stat-divider"></div>
+            <div class="hero-stat">
+                <span class="hero-stat-number">0$</span>
+                <span class="hero-stat-label">Forever</span>
             </div>
         </div>
     </div>
 
-    <div class="landing-badge">NoteWise</div>
-    <h1>Notes that think<br>with you.</h1>
-    <p>Write, search, and summarize your notes with AI — clean, fast, and yours.</p>
-    <div class="landing-actions">
-        <a href="{{ url_for('signup') }}" class="btn btn-primary">Get Started</a>
-        <a href="{{ url_for('login') }}" class="btn">Log In</a>
+    <div class="hero-visual">
+        <div class="hero-app-preview">
+            <!-- Simulated app window -->
+            <div class="preview-window">
+                <div class="preview-titlebar">
+                    <div class="preview-dots">
+                        <span class="dot dot-red"></span>
+                        <span class="dot dot-yellow"></span>
+                        <span class="dot dot-green"></span>
+                    </div>
+                    <span class="preview-titlebar-text">NoteWise</span>
+                </div>
+                <div class="preview-body">
+                    <div class="preview-sidebar">
+                        <div class="preview-sidebar-item active">
+                            <div class="preview-sidebar-icon"></div>
+                            <div class="preview-sidebar-label">All Notes</div>
+                        </div>
+                        <div class="preview-sidebar-item">
+                            <div class="preview-sidebar-icon"></div>
+                            <div class="preview-sidebar-label">Favorites</div>
+                        </div>
+                        <div class="preview-sidebar-item">
+                            <div class="preview-sidebar-icon"></div>
+                            <div class="preview-sidebar-label">AI Chat</div>
+                        </div>
+                    </div>
+                    <div class="preview-content">
+                        <div class="preview-card card-c0" style="animation-delay: 0.1s;">
+                            <div class="preview-card-title"></div>
+                            <div class="preview-card-line"></div>
+                            <div class="preview-card-line short"></div>
+                        </div>
+                        <div class="preview-card card-c1" style="animation-delay: 0.2s;">
+                            <div class="preview-card-title"></div>
+                            <div class="preview-card-line"></div>
+                            <div class="preview-card-line short"></div>
+                        </div>
+                        <div class="preview-card card-c2" style="animation-delay: 0.3s;">
+                            <div class="preview-card-title"></div>
+                            <div class="preview-card-line"></div>
+                            <div class="preview-card-line short"></div>
+                        </div>
+                        <div class="preview-card card-c3" style="animation-delay: 0.4s;">
+                            <div class="preview-card-title"></div>
+                            <div class="preview-card-line"></div>
+                            <div class="preview-card-line short"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Floating elements -->
+            <div class="floating-element float-ai">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="7" width="16" height="12" rx="3"></rect><circle cx="9" cy="13" r="1.3" fill="currentColor" stroke="none"></circle><circle cx="15" cy="13" r="1.3" fill="currentColor" stroke="none"></circle><path d="M12 7V4"></path><circle cx="12" cy="3" r="1" fill="currentColor" stroke="none"></circle></svg>
+                <span>AI Summary ready</span>
+            </div>
+
+            <div class="floating-element float-folder">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h6l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"></path></svg>
+                <span>3 folders</span>
+            </div>
+
+            <div class="floating-element float-star">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                <span>Favorited!</span>
+            </div>
+        </div>
     </div>
-</div>
+</section>
+
+<!-- ======== FEATURES ======== -->
+<section class="features-section" id="features">
+    <div class="section-container">
+        <div class="section-header">
+            <span class="section-tag">Features</span>
+            <h2 class="section-title">Everything you need,<br>nothing you don't.</h2>
+            <p class="section-desc">NoteWise is designed for clarity. Every feature serves a purpose — to help you think better.</p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card feature-card-large" id="feature-ai">
+                <div class="feature-icon-wrap feature-icon-amber">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="7" width="16" height="12" rx="3"></rect><circle cx="9" cy="13" r="1.3" fill="currentColor" stroke="none"></circle><circle cx="15" cy="13" r="1.3" fill="currentColor" stroke="none"></circle><path d="M12 7V4"></path><circle cx="12" cy="3" r="1" fill="currentColor" stroke="none"></circle></svg>
+                </div>
+                <h3>AI-Powered Intelligence</h3>
+                <p>Summarize notes instantly, ask questions about your content, and chat with an AI that knows your notes — all built in.</p>
+                <div class="feature-demo-chat">
+                    <div class="demo-bubble demo-user">Summarize my meeting notes</div>
+                    <div class="demo-bubble demo-ai">
+                        <span class="demo-typing">
+                            The team agreed on Q3 priorities: launch v2.0 by August, hire 2 engineers, and redesign onboarding flow…
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feature-card" id="feature-folders">
+                <div class="feature-icon-wrap feature-icon-rose">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h6l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"></path></svg>
+                </div>
+                <h3>Smart Folders</h3>
+                <p>Organize notes into color-coded folders. Drag, sort, and find everything exactly where you left it.</p>
+            </div>
+
+            <div class="feature-card" id="feature-search">
+                <div class="feature-icon-wrap feature-icon-blue">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                </div>
+                <h3>Instant Search</h3>
+                <p>Find any note in milliseconds. Search by title, content, date, or folder — your memory, amplified.</p>
+            </div>
+
+            <div class="feature-card" id="feature-calendar">
+                <div class="feature-icon-wrap feature-icon-green">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                </div>
+                <h3>Calendar View</h3>
+                <p>See your notes mapped to dates. Track your writing rhythm and revisit any day with a single click.</p>
+            </div>
+
+            <div class="feature-card" id="feature-markdown">
+                <div class="feature-icon-wrap feature-icon-purple">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                </div>
+                <h3>Markdown Support</h3>
+                <p>Write in Markdown with live preview. Bold, lists, headings, code blocks — all beautifully rendered.</p>
+            </div>
+
+            <div class="feature-card" id="feature-darkmode">
+                <div class="feature-icon-wrap feature-icon-slate">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                </div>
+                <h3>Dark &amp; Light Modes</h3>
+                <p>Easy on the eyes, day or night. Switch themes with one click — your preference is always remembered.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ======== HOW IT WORKS ======== -->
+<section class="how-section" id="how-it-works">
+    <div class="section-container">
+        <div class="section-header">
+            <span class="section-tag">How It Works</span>
+            <h2 class="section-title">Three steps to clarity.</h2>
+            <p class="section-desc">No setup. No learning curve. Just start writing.</p>
+        </div>
+
+        <div class="steps-row">
+            <div class="step-card" id="step-1">
+                <div class="step-number">01</div>
+                <div class="step-line"></div>
+                <h3>Create an account</h3>
+                <p>Sign up in seconds. No credit card, no fuss. Your notes are private and secure from day one.</p>
+            </div>
+            <div class="step-card" id="step-2">
+                <div class="step-number">02</div>
+                <div class="step-line"></div>
+                <h3>Write &amp; Organize</h3>
+                <p>Create notes with Markdown, organize them into folders, star your favorites, and search instantly.</p>
+            </div>
+            <div class="step-card" id="step-3">
+                <div class="step-number">03</div>
+                <div class="step-line"></div>
+                <h3>Let AI help</h3>
+                <p>Summarize long notes in one click, ask questions about your content, or chat with AI that truly understands your notes.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ======== AI SHOWCASE ======== -->
+<section class="ai-section" id="ai-power">
+    <div class="section-container">
+        <div class="ai-split">
+            <div class="ai-text-side">
+                <span class="section-tag">AI Built In</span>
+                <h2 class="section-title" style="text-align:left;">Your notes,<br>supercharged.</h2>
+                <p class="section-desc" style="text-align:left;">NoteWise uses powerful AI to turn your raw notes into actionable insights.</p>
+
+                <div class="ai-features-list">
+                    <div class="ai-feature-item">
+                        <div class="ai-feature-dot"></div>
+                        <div>
+                            <strong>One-click Summaries</strong>
+                            <span>Condense any note into key takeaways instantly.</span>
+                        </div>
+                    </div>
+                    <div class="ai-feature-item">
+                        <div class="ai-feature-dot"></div>
+                        <div>
+                            <strong>Ask About Your Notes</strong>
+                            <span>Ask questions and get answers based on what you've written.</span>
+                        </div>
+                    </div>
+                    <div class="ai-feature-item">
+                        <div class="ai-feature-dot"></div>
+                        <div>
+                            <strong>Smart Chat Assistant</strong>
+                            <span>A conversational AI that has context of all your notes.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ai-visual-side">
+                <div class="ai-chat-demo">
+                    <div class="ai-chat-demo-header">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="7" width="16" height="12" rx="3"></rect><circle cx="9" cy="13" r="1.3" fill="currentColor" stroke="none"></circle><circle cx="15" cy="13" r="1.3" fill="currentColor" stroke="none"></circle><path d="M12 7V4"></path><circle cx="12" cy="3" r="1" fill="currentColor" stroke="none"></circle></svg>
+                        NoteWise AI
+                    </div>
+                    <div class="ai-chat-demo-messages">
+                        <div class="ai-demo-msg ai-demo-user">What did I write about in my project notes?</div>
+                        <div class="ai-demo-msg ai-demo-bot">Based on your notes, your project covers three main areas: the API redesign scheduled for next sprint, the database migration plan, and the new user onboarding flow you drafted last Tuesday.</div>
+                        <div class="ai-demo-msg ai-demo-user">Summarize the onboarding note</div>
+                        <div class="ai-demo-msg ai-demo-bot">Your onboarding note outlines a 3-step welcome flow: account setup, first-note tutorial, and AI feature walkthrough. You noted that reducing steps from 5 to 3 increased completion by 40%.</div>
+                    </div>
+                    <div class="ai-chat-demo-input">
+                        <span>Ask about your notes…</span>
+                        <div class="ai-send-icon">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ======== FINAL CTA ======== -->
+<section class="cta-section" id="cta">
+    <div class="cta-glow"></div>
+    <div class="section-container">
+        <div class="cta-content">
+            <h2 class="cta-title">Ready to think<br>more clearly?</h2>
+            <p class="cta-desc">Join NoteWise and experience note-taking that actually helps you think. Free forever.</p>
+            <a href="{{ url_for('signup') }}" class="hero-btn-primary cta-btn" id="cta-signup">
+                Get Started — It's Free
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ======== FOOTER ======== -->
+<footer class="landing-footer">
+    <div class="section-container">
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <span class="landing-nav-diamond">◆</span> NoteWise
+            </div>
+            <p class="footer-copy">Built with care. Powered by AI.</p>
+        </div>
+    </div>
+</footer>
+
+<!-- ======== SCROLL ANIMATIONS ======== -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Navbar background on scroll
+    const nav = document.getElementById('landing-nav');
+    window.addEventListener('scroll', function() {
+        if (window.scrollY > 40) {
+            nav.classList.add('nav-scrolled');
+        } else {
+            nav.classList.remove('nav-scrolled');
+        }
+    });
+
+    // Intersection Observer for scroll animations
+    const animatedElements = document.querySelectorAll('.feature-card, .step-card, .ai-feature-item, .ai-chat-demo, .cta-content');
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animate-in');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+
+    animatedElements.forEach(function(el) {
+        observer.observe(el);
+    });
+
+    // Smooth scrolling for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Close mobile menu if open
+                document.querySelector('.landing-nav-links').classList.remove('open');
+            }
+        });
+    });
+});
+</script>
+
 </body>
 </html>
