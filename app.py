@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 import calendar as cal
 import markdown as md
 import bleach
+from flask_wtf import CSRFProtect
 
 ALLOWED_TAGS = ['p', 'br', 'strong', 'em', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'blockquote', 'code', 'pre', 'a']
 ALLOWED_ATTRS = {'a': ['href']}
@@ -20,6 +21,7 @@ from groq import Groq
 
 app = Flask(__name__)
 app.config.from_object(Config)
+csrf = CSRFProtect(app)
 
 @app.after_request
 def add_no_cache_headers(response):
