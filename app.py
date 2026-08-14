@@ -69,6 +69,9 @@ def landing():
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
     return render_template('landing.html')
+@app.route('/privacy')
+def privacy():
+    return render_template('privacy.html', updated_date=datetime.utcnow().strftime('%B %d, %Y'))
 
 # ---------- AUTH ----------
 
@@ -85,6 +88,10 @@ def signup():
 
         if User.query.filter_by(username=username).first():
             flash('That username is already taken.', 'error')
+            return redirect(url_for('signup'))
+
+        if not request.form.get('consent'):
+            flash('You must agree to the Privacy Policy to create an account.', 'error')
             return redirect(url_for('signup'))
 
         user = User(

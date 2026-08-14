@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Privacy Policy - NoteWise</title>
+    <script>
+    (function() {
+        document.documentElement.setAttribute('data-theme', localStorage.getItem('theme') || 'light');
+    })();
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .pp-wrap { max-width: 720px; margin: 0 auto; padding: 60px 24px 100px; }
+        .pp-wrap h1 { font-size: 32px; margin-bottom: 6px; }
+        .pp-updated { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink-soft); margin-bottom: 40px; display: block; }
+        .pp-wrap h2 { font-size: 19px; margin-top: 36px; margin-bottom: 12px; }
+        .pp-wrap p, .pp-wrap li { font-size: 14.5px; color: var(--ink-soft); line-height: 1.75; margin-bottom: 10px; }
+        .pp-wrap ul { padding-left: 20px; margin-bottom: 14px; }
+        .pp-wrap strong { color: var(--ink); }
+        .pp-back { display: inline-block; margin-bottom: 30px; font-size: 13px; color: var(--spine-dark); text-decoration: none; }
+    </style>
+</head>
+<body>
+<div class="pp-wrap">
+    <a href="javascript:history.back()" class="pp-back">&larr; Back</a>
+    <h1>Privacy Policy</h1>
+    <span class="pp-updated">Last updated: {{ updated_date }}</span>
+
+    <p>NoteWise ("we", "our") respects your privacy. This page explains what personal data we collect, why, and what rights you have over it. This is a plain-language summary, not a substitute for legal advice.</p>
+
+    <h2>What we collect</h2>
+    <ul>
+        <li><strong>Account data:</strong> username, email address, and a securely hashed password (we never store your actual password).</li>
+        <li><strong>Note content:</strong> the titles and text of notes you create, including any personal information you choose to write in them.</li>
+        <li><strong>Usage data:</strong> timestamps of when notes are created or updated, and folder/theme preferences.</li>
+    </ul>
+
+    <h2>How your data is used</h2>
+    <ul>
+        <li>To provide core functionality — storing and displaying your notes, folders, and account settings.</li>
+        <li>To power AI features (summarizing notes, answering questions about your notes, and the AI chat assistant). When you use these features, the relevant note content is sent to <strong>Groq</strong>, our third-party AI provider, solely to generate a response. Groq processes this data to return the AI output and does not use it to train models on our behalf beyond that request.</li>
+    </ul>
+
+    <h2>Where your data is stored</h2>
+    <p>Your data is stored on servers operated by our hosting providers (Render for the application, Neon for the database), which may be located outside India. We take reasonable measures to keep this data secure in transit and at rest.</p>
+
+    <h2>Your rights</h2>
+    <ul>
+        <li><strong>Access:</strong> you can view all your notes and account details at any time by logging in.</li>
+        <li><strong>Correction:</strong> you can update your username and email from your Profile page.</li>
+        <li><strong>Erasure:</strong> deleting a note moves it to Trash, where you can permanently delete it. Deleting your account entirely can be requested by contacting us (see below).</li>
+        <li><strong>Withdrawing consent:</strong> you may stop using the service and request deletion of your data at any time.</li>
+    </ul>
+
+    <h2>Data retention</h2>
+    <p>We retain your account and note data for as long as your account is active. Notes moved to Trash remain recoverable until you permanently delete them.</p>
+
+    <h2>Contact</h2>
+    <p>For any privacy-related questions or to request deletion of your account and data, contact the site owner directly.</p>
+</div>
+</body>
+</html>
