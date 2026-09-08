@@ -24,6 +24,20 @@ Built with Flask, SQLAlchemy, and Groq's Llama 3.3 70B.
 > ⏳ **Note:** This app is hosted on Render's free tier — the first load may take 30–60 seconds while the server spins up.
 
 ---
+## Project Structure
+
+```
+notewise/
+├── app.py                 # Main Flask application & routes
+├── config.py               # App configuration (DB, secret key, etc.)
+├── requirements.txt        # Python dependencies
+├── models/                 # SQLAlchemy models (User, Note)
+├── templates/               # HTML templates (Jinja2)
+├── static/
+│   ├── images/              # Screenshots & assets
+│   └── ...                  # CSS/JS files
+└── .env                     # Environment variables (not committed)
+```
 
 ## ✨ Features
 
@@ -146,17 +160,13 @@ python app.py
 
 ---
 
-## ✅ Roadmap
+## Roadmap
 
-**Shipped**
-- [x] User authentication & authorization
-- [x] CRUD operations for notes
-- [x] AI-powered chat assistant
-- [x] CSRF protection for all forms
-- [x] Archive and trash system
-- [x] Calendar view for notes
-- [x] Dark/light theme toggle
-
+- [ ] Dark mode toggle
+- [ ] Export notes as PDF
+- [ ] Tagging and categorizing notes
+- [ ] Rich text editor (bold, lists, links)
+- [ ] Note sharing between users
 **Planned**
 - [ ] Collaborative note sharing
 - [ ] Real-time sync across devices
