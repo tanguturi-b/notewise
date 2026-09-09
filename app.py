@@ -15,7 +15,7 @@ ALLOWED_TAGS = ['p', 'br', 'strong', 'em', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', '
 ALLOWED_ATTRS = {'a': ['href']}
 
 from config import Config
-from models import db, User, Note, Folder, to_ist
+from models import db, User, Note, Folder, ChatSession, ChatMessage, to_ist
 import os
 from groq import Groq
 
@@ -367,7 +367,7 @@ def summarize_note(note_id):
         return "Unauthorized", 403
     try:
         response = groq_client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="qwen/qwen3.8-27b",
             messages=[
                 {"role": "system", "content": "Summarize the given note in 1-2 concise sentences. Return only the summary, nothing else."},
                 {"role": "user", "content": note.content}
@@ -390,7 +390,7 @@ def ask_about_note(note_id):
     if question:
         try:
             response = groq_client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model="qwen/qwen3.8-27b",
                 messages=[
                     {"role": "system", "content": "Answer the user's question based only on the note content provided. Be concise."},
                     {"role": "user", "content": f"Note content:\n{note.content}\n\nQuestion: {question}"}
@@ -405,18 +405,53 @@ def ask_about_note(note_id):
 
 # ---------- AI CHAT ----------
 
-@app.route('/chat', methods=['GET', 'POST'])
+def get_chat_sessions(user_id):
+    """Get all chat sessions for a user, grouped by date."""
+    sessions = ChatSession.query.filter_by(user_id=user_id).order_by(ChatSession.updated_at.desc()).all()
+    today = datetime.utcnow().date()
+    grouped = {'today': [], 'yesterday': [], 'this_week': [], 'older': []}
+    for s in sessions:
+        diff = (today - s.updated_at.date()).days
+        if diff == 0:
+            grouped['today'].append(s)
+        elif diff == 1:
+            grouped['yesterday'].append(s)
+        elif diff <= 7:
+            grouped['this_week'].append(s)
+        else:
+            grouped['older'].append(s)
+    return grouped
+
+@app.route('/chat')
 @login_required
 def chat():
-    if 'chat_history' not in session:
-        session['chat_history'] = []
+    """Redirect to latest session or show empty state."""
+    latest = ChatSession.query.filter_by(user_id=current_user.id).order_by(ChatSession.updated_at.desc()).first()
+    if latest:
+        return redirect(url_for('chat_session', session_id=latest.id))
+    grouped = get_chat_sessions(current_user.id)
+    return render_template('chat.html', chat_session=None, history=[], grouped_sessions=grouped)
+
+@app.route('/chat/<int:session_id>', methods=['GET', 'POST'])
+@login_required
+def chat_session(session_id):
+    """View or send a message to a specific chat session."""
+    cs = ChatSession.query.get_or_404(session_id)
+    if cs.user_id != current_user.id:
+        return "Unauthorized", 403
 
     if request.method == 'POST':
         user_message = request.form['message'].strip()
         if user_message:
-            history = session['chat_history']
-            history.append({'role': 'user', 'content': user_message})
+            # Save user message
+            user_msg = ChatMessage(role='user', content=user_message, session_id=cs.id)
+            db.session.add(user_msg)
 
+            # Auto-title from first message
+            if cs.title == 'New Chat':
+                cs.title = user_message[:40] + ('...' if len(user_message) > 40 else '')
+
+            # Build context
             notes = Note.query.filter_by(user_id=current_user.id, is_deleted=False).order_by(Note.updated_at.desc()).all()
             if notes:
                 notes_context = "The user's actual notes (title: preview):\n" + "\n".join(
@@ -428,37 +463,72 @@ def chat():
             try:
                 messages = [
                     {"role": "system", "content": (
-                        "You are a helpful, friendly assistant. Talk like a real person - casual, natural, and genuine. "
-                        "Don't use scripted phrases like 'I'm all ears' or 'What's on your mind?' - just be authentic. "
-                        "Help with anything: code, questions, ideas, brainstorming, advice, or just chatting. "
-                        "Keep responses concise and natural. Use conversational language, not formal. "
-                        "You have access to the user's notes, mention them naturally if relevant, but don't force it. "
-                        "Be like texting with a knowledgeable friend who actually helps.\n\n"
+                        "You are Notewise AI — a smart, concise assistant built into a note-taking app. "
+                        "Your job is to help the user with their notes, answer questions, explain concepts, brainstorm ideas, and assist with anything they ask.\n\n"
+                        "Guidelines:\n"
+                        "- Be concise and direct. Get to the point quickly.\n"
+                        "- Use clear formatting: bullet points, numbered lists, or short paragraphs when it helps readability.\n"
+                        "- When explaining a topic, give a well-structured response with key points — not a wall of text.\n"
+                        "- Be warm and natural, but not overly casual. No cringey filler phrases like 'Shout if you need anything', 'I'm all ears', or 'What's on your mind?'\n"
+                        "- If the user's question relates to their notes, reference them naturally. Don't force note references when irrelevant.\n"
+                        "- For factual topics, be accurate and informative. For creative tasks, be imaginative.\n"
+                        "- If you don't know something, say so honestly.\n"
+                        "- End responses cleanly — don't add unnecessary sign-off phrases.\n\n"
                         + notes_context
                     )}
                 ]
-                messages += history[-10:]
+                # Use last 10 messages from this session for context
+                recent_msgs = ChatMessage.query.filter_by(session_id=cs.id).order_by(ChatMessage.created_at.desc()).limit(10).all()
+                recent_msgs.reverse()
+                messages += [{"role": m.role, "content": m.content} for m in recent_msgs]
+
                 response = groq_client.chat.completions.create(
-                    model="llama-3.3-70b-versatile",
+                    model="qwen/qwen3.8-27b",
                     messages=messages,
                     max_tokens=300
                 )
                 ai_reply = response.choices[0].message.content
-                history.append({'role': 'assistant', 'content': ai_reply})
+                ai_msg = ChatMessage(role='assistant', content=ai_reply, session_id=cs.id)
+                db.session.add(ai_msg)
             except Exception as e:
-                history.append({'role': 'assistant', 'content': f"Error: {str(e)}"})
+                ai_msg = ChatMessage(role='assistant', content=f"Error: {str(e)}", session_id=cs.id)
+                db.session.add(ai_msg)
 
-            session['chat_history'] = history
-            session.modified = True
+            cs.updated_at = datetime.utcnow()
+            db.session.commit()
 
-        return redirect(url_for('chat'))
+        return redirect(url_for('chat_session', session_id=cs.id))
 
-    return render_template('chat.html', history=session.get('chat_history', []))
+    history = [{'role': m.role, 'content': m.content} for m in cs.messages]
+    grouped = get_chat_sessions(current_user.id)
+    return render_template('chat.html', chat_session=cs, history=history, grouped_sessions=grouped)
+
+@app.route('/chat/new', methods=['POST'])
+@login_required
+def new_chat():
+    """Create a new chat session."""
+    cs = ChatSession(title='New Chat', user_id=current_user.id)
+    db.session.add(cs)
+    db.session.commit()
+    return redirect(url_for('chat_session', session_id=cs.id))
+
+@app.route('/chat/<int:session_id>/delete', methods=['POST'])
+@login_required
+def delete_chat(session_id):
+    """Delete a specific chat session."""
+    cs = ChatSession.query.get_or_404(session_id)
+    if cs.user_id != current_user.id:
+        return "Unauthorized", 403
+    db.session.delete(cs)
+    db.session.commit()
+    return redirect(url_for('chat'))
 
 @app.route('/chat/clear', methods=['POST'])
 @login_required
 def clear_chat():
-    session['chat_history'] = []
+    """Delete all chat sessions for the current user."""
+    ChatSession.query.filter_by(user_id=current_user.id).delete()
+    db.session.commit()
     return redirect(url_for('chat'))
 
 with app.app_context():
